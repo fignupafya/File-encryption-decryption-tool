@@ -4,8 +4,28 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
+import platform
 
 SAFE_FILES = ['lock-unlock.py', 'salt.key']
+
+
+def hide_file(file_path):
+    system = platform.system()
+    if system == 'Windows':
+        os.system('attrib +h ' + file_path)
+    elif system == 'Linux' or system == 'Darwin':  # Unix-like systems (Linux, macOS)
+        dirname, filename = os.path.split(file_path)
+        new_file_path = os.path.join(dirname, '.' + filename)
+        os.rename(file_path, new_file_path)
+    else:
+        print(f"Unsupported system: {system}")
+
+
+def hide_encrypted_files_and_salt():
+    current_directory = os.getcwd()
+    for filename in os.listdir(current_directory):
+        if filename.endswith('.encrypted') or filename == SAFE_FILES[1]:
+            hide_file(filename)
 
 def derive_key(password, salt):
     kdf = PBKDF2HMAC(
@@ -30,7 +50,7 @@ def encrypt_decrypt_file(password, input_file, output_file, encrypt=True):
     if input_file in SAFE_FILES:
         return
 
-    salt_file = 'salt.key'
+    salt_file = SAFE_FILES[1]
     if os.path.exists(salt_file):
         salt = load_salt_from_file(salt_file)
     else:
@@ -44,6 +64,8 @@ def encrypt_decrypt_file(password, input_file, output_file, encrypt=True):
     else:
         if input_file.endswith('.encrypted'):
             output_file = output_file.replace('.encrypted', '')
+            if input_file.startswith("."):
+                output_file = output_file[1:]
         else:
             print(f"Cannot decrypt {input_file}. File is not encrypted.")
             return
@@ -97,9 +119,12 @@ def main():
             elif not filename.endswith('.encrypted') and not decrypt:
                 encrypt_decrypt_file(password, filename, filename, encrypt=True)
                 print(f"{filename} encrypted and decrypted successfully!")
+        hide_encrypted_files_and_salt()
 
     if decrypt and is_all_decrypted():
-        os.remove("salt.key")
+        os.remove(SAFE_FILES[1])
+
+
 
 if __name__ == "__main__":
     main()
