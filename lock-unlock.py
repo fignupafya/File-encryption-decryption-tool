@@ -6,7 +6,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 import platform
 
-SAFE_FILES = ['lock-unlock.py', 'salt.key']
+SAFE_FILES = ['lock-unlock.py', '.salt.key']
 
 
 def hide_file(file_path):
