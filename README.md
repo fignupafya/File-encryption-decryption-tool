@@ -1,6 +1,7 @@
 # File Encryption and Decryption Tool
 
 This Python script provides a simple command-line interface for encrypting and decrypting files using the Fernet symmetric encryption algorithm from the `cryptography` library. It allows users to securely protect their sensitive files with a password and decrypt them when needed.
+Can be used to keep a journal.
 
 ## Features
 
